@@ -6,6 +6,8 @@ import "package:flutter/material.dart";
 import 'package:provider/provider.dart';
 
 class GamePage extends StatefulWidget {
+  static const String route = "/game";
+
   const GamePage({super.key});
 
   @override

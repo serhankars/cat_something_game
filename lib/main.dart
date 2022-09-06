@@ -1,3 +1,4 @@
+import 'package:cat_something_game/pages/menu_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -22,9 +23,51 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Cat something',
         theme: ThemeData(
+          fontFamily: 'BitmapFont',
           primarySwatch: Colors.blue,
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style: ButtonStyle(
+              shape: const MaterialStatePropertyAll(StadiumBorder()),
+              side: MaterialStateProperty.resolveWith<BorderSide>((states) {
+                if (states.contains(MaterialState.hovered) ||
+                    states.contains(MaterialState.pressed)) {
+                  return const BorderSide(color: Colors.white);
+                }
+
+                return const BorderSide(color: Colors.black);
+              }),
+              foregroundColor: MaterialStateProperty.resolveWith<Color>(
+                (states) {
+                  if (states.contains(MaterialState.hovered) ||
+                      states.contains(MaterialState.pressed)) {
+                    return Colors.white;
+                  }
+                  return Colors.black;
+                },
+              ),
+              textStyle: MaterialStateProperty.resolveWith<TextStyle>(
+                (states) {
+                  if (states.contains(MaterialState.hovered) ||
+                      states.contains(MaterialState.pressed)) {
+                    return const TextStyle(
+                      fontFamily: 'BitmapFont',
+                      fontSize: 25,
+                    );
+                  }
+                  return const TextStyle(
+                    fontFamily: 'BitmapFont',
+                    fontSize: 24,
+                  );
+                },
+              ),
+            ),
+          ),
         ),
-        home: const GamePage(),
+        initialRoute: MenuPage.route,
+        routes: {
+          MenuPage.route: (context) => const MenuPage(),
+          GamePage.route: (context) => const GamePage()
+        },
       ),
     );
   }
