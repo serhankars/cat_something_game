@@ -5,6 +5,8 @@ import 'package:cat_something_game/services/game_services.dart';
 import "package:flutter/material.dart";
 import 'package:provider/provider.dart';
 
+import '../widgets/game_over_dialog.dart';
+
 class GamePage extends StatefulWidget {
   static const String route = "/game";
 
@@ -22,26 +24,46 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
   List<Alignment> _nextAlignmentsOfKillers = [];
   double screenWidth = 0;
   double screenHeight = 0;
-  late AnimationController _acCat;
-  late AnimationController _acOthers;
-  late Timer othersTimer;
+  late AnimationController _catAnimationController;
+  late AnimationController _othersAnimationContoller;
+  late Timer _othersTimer;
+  late Timer _collisionControlTimer;
   late int _numberOfKillers;
   Random random = Random();
+
+  void _endGame() {
+    setState(() {
+      _othersAnimationContoller.reset();
+      _othersAnimationContoller.stop();
+      _othersTimer.cancel();
+      _collisionControlTimer.cancel();
+      _oldAlignmentCat = const Alignment(0, 0);
+      _nextAlignmentCat = const Alignment(0, 0);
+    });
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return const GameOverDialog();
+      },
+    );
+  }
 
   void _controlCollisions(Timer timer) {
     Alignment currentCatAlignment =
         AlignmentTween(begin: _oldAlignmentCat, end: _nextAlignmentCat)
-            .evaluate(_acCat);
+            .evaluate(_catAnimationController);
 
     for (int i = 0; i < _numberOfKillers; i++) {
       Alignment currentKillerAlignment = AlignmentTween(
               begin: _previousAlignmentsOfKillers[i],
               end: _nextAlignmentsOfKillers[i])
-          .evaluate(_acOthers);
+          .evaluate(_othersAnimationContoller);
 
       if ((currentCatAlignment.x - currentKillerAlignment.x).abs() < 0.04 &&
           (currentCatAlignment.y - currentKillerAlignment.y).abs() < 0.04) {
         debugPrint("KILLED!!!!");
+        _endGame();
       }
     }
   }
@@ -70,15 +92,15 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
 
     _nextAlignmentsOfKillers = [..._previousAlignmentsOfKillers];
 
-    _acCat = AnimationController(
+    _catAnimationController = AnimationController(
         vsync: this, duration: Duration(seconds: durationBetweenPointsForCat));
 
-    _acOthers = AnimationController(
+    _othersAnimationContoller = AnimationController(
         vsync: this,
         duration: Duration(seconds: durationBetweenPointsForKillers));
     super.initState();
 
-    othersTimer = Timer.periodic(
+    _othersTimer = Timer.periodic(
         Duration(seconds: durationBetweenPointsForKillers), (timer) {
       setState(() {
         _previousAlignmentsOfKillers = _nextAlignmentsOfKillers;
@@ -88,11 +110,11 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                 _generateRandomCoordinateAxisValue())
         ];
       });
-      _acOthers.reset();
-      _acOthers.forward();
+      _othersAnimationContoller.reset();
+      _othersAnimationContoller.forward();
     });
 
-    Timer.periodic(
+    _collisionControlTimer = Timer.periodic(
         const Duration(
           milliseconds: 10,
         ),
@@ -115,10 +137,10 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                   (screenHeight / 2);
           _oldAlignmentCat =
               AlignmentTween(begin: _oldAlignmentCat, end: _nextAlignmentCat)
-                  .evaluate(_acCat);
+                  .evaluate(_catAnimationController);
           _nextAlignmentCat = Alignment(horizontalAlignment, verticalAlignment);
-          _acCat.reset();
-          _acCat.forward();
+          _catAnimationController.reset();
+          _catAnimationController.forward();
 
           setState(() {});
         },
@@ -136,7 +158,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
               AlignTransition(
                 alignment: AlignmentTween(
                         begin: _oldAlignmentCat, end: _nextAlignmentCat)
-                    .animate(_acCat),
+                    .animate(_catAnimationController),
                 child: Image.asset(
                   "assets/images/cat.png",
                   width: 50,
@@ -148,7 +170,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                   alignment: AlignmentTween(
                           begin: _previousAlignmentsOfKillers[i],
                           end: _nextAlignmentsOfKillers[i])
-                      .animate(_acOthers),
+                      .animate(_othersAnimationContoller),
                   child: Image.asset(
                     "assets/images/dog.png",
                     width: 50,
