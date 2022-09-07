@@ -64,6 +64,7 @@ flutter:
   assets:
     - assets/images/cat.png
     - assets/images/dog.png
+    - assets/images/mouse.png    
     - assets/images/background.png
 
 
