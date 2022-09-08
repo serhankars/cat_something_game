@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'pages/game_page.dart';
 import 'services/game_services.dart';
+import 'services/mouse_positioning_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,8 +21,10 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<GameServices>(
             create: (context) => GameServices()),
-        ChangeNotifierProvider<CatPositinioningService>(
-            create: (context) => CatPositinioningService()),
+        ChangeNotifierProvider<CatPositioningService>(
+            create: (context) => CatPositioningService()),
+        ChangeNotifierProvider<MousePositioningService>(
+            create: (context) => MousePositioningService()),
       ],
       child: MaterialApp(
         title: 'Cat something',

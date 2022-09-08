@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:cat_something_game/services/game_services.dart';
+import 'package:cat_something_game/services/mouse_positioning_service.dart';
 import "package:flutter/material.dart";
 import 'package:provider/provider.dart';
 
@@ -9,6 +10,7 @@ import '../helpers/positioning_helpers.dart';
 import '../services/cat_positioning_service.dart';
 import '../widgets/cat.dart';
 import '../widgets/game_over_dialog.dart';
+import '../widgets/mouse.dart';
 
 class GamePage extends StatefulWidget {
   static const String route = "/game";
@@ -26,9 +28,6 @@ class _GamePageState extends State<GamePage>
   double _screenHeight = 0;
   int _totalMouseCatched = 0;
 
-  late Alignment _oldAlignmentMouse;
-  late Alignment _nextAlignmentMouse;
-
   List<Alignment> _previousAlignmentsOfKillers = [];
   List<Alignment> _nextAlignmentsOfKillers = [];
   late AnimationController _othersAnimationContoller;
@@ -44,7 +43,7 @@ class _GamePageState extends State<GamePage>
     double targetAlignmentY =
         (details.globalPosition.dy - (_screenHeight / 2)) / (_screenHeight / 2);
 
-    Provider.of<CatPositinioningService>(context, listen: false)
+    Provider.of<CatPositioningService>(context, listen: false)
         .setTargetAlignment(Alignment(targetAlignmentX, targetAlignmentY));
 
     setState(() {
@@ -57,8 +56,8 @@ class _GamePageState extends State<GamePage>
   void _onMouseCatched() {
     setState(() {
       _totalMouseCatched++;
-      _oldAlignmentMouse = PositioningHelpers.generateRandomAlignment();
-      _nextAlignmentMouse = _oldAlignmentMouse;
+      Provider.of<MousePositioningService>(context, listen: false)
+          .resetPosition();
     });
   }
 
@@ -71,7 +70,8 @@ class _GamePageState extends State<GamePage>
       _isGameStarted = false;
     });
 
-    Provider.of<CatPositinioningService>(context, listen: false)
+    Provider.of<MousePositioningService>(context, listen: false).stopMovement();
+    Provider.of<CatPositioningService>(context, listen: false)
         .resetCatPosition();
 
     showDialog(
@@ -87,12 +87,12 @@ class _GamePageState extends State<GamePage>
     if (!_isGameStarted) return;
 
     Alignment currentCatAlignment =
-        Provider.of<CatPositinioningService>(context, listen: false)
+        Provider.of<CatPositioningService>(context, listen: false)
             .getCurrentAlignment();
 
     Alignment currentMouseAlignment =
-        AlignmentTween(begin: _oldAlignmentMouse, end: _nextAlignmentMouse)
-            .evaluate(_othersAnimationContoller);
+        Provider.of<MousePositioningService>(context, listen: false)
+            .getCurrentAlignment();
 
     for (int i = 0; i < _numberOfKillers; i++) {
       Alignment currentKillerAlignment = AlignmentTween(
@@ -133,11 +133,6 @@ class _GamePageState extends State<GamePage>
     ];
 
     _nextAlignmentsOfKillers = [..._previousAlignmentsOfKillers];
-
-    _oldAlignmentMouse = PositioningHelpers.generateRandomAlignment();
-
-    _nextAlignmentMouse = _oldAlignmentMouse;
-
     _othersAnimationContoller = AnimationController(
         vsync: this,
         duration: Duration(seconds: durationBetweenPointsForKillers));
@@ -153,10 +148,10 @@ class _GamePageState extends State<GamePage>
           for (int i = 0; i < _numberOfKillers; i++)
             PositioningHelpers.generateRandomAlignment()
         ];
-
-        _oldAlignmentMouse = _nextAlignmentMouse;
-        _nextAlignmentMouse = PositioningHelpers.generateRandomAlignment();
       });
+
+      Provider.of<MousePositioningService>(context, listen: false)
+          .resetTarget();
       _othersAnimationContoller.reset();
       _othersAnimationContoller.forward();
     });
@@ -187,16 +182,7 @@ class _GamePageState extends State<GamePage>
           constraints: const BoxConstraints.expand(),
           child: Stack(
             children: [
-              AlignTransition(
-                alignment: AlignmentTween(
-                        begin: _oldAlignmentMouse, end: _nextAlignmentMouse)
-                    .animate(_othersAnimationContoller),
-                child: Image.asset(
-                  "assets/images/mouse.png",
-                  width: 50,
-                  height: 50,
-                ),
-              ),
+              const Mouse(),
               const Cat(),
               for (int i = 0; i < _numberOfKillers; i++)
                 AlignTransition(

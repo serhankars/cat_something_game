@@ -23,7 +23,7 @@ class _CatState extends State<Cat> with SingleTickerProviderStateMixin {
     _animationController = AnimationController(
         vsync: this, duration: Duration(seconds: durationBetweenPointsForCat));
 
-    Provider.of<CatPositinioningService>(context, listen: false)
+    Provider.of<CatPositioningService>(context, listen: false)
         .setAnimationController(_animationController);
 
     super.initState();
@@ -37,7 +37,7 @@ class _CatState extends State<Cat> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<CatPositinioningService>(
+    return Consumer<CatPositioningService>(
         builder: (context, catPositinioningService, child) {
       return AlignTransition(
         alignment: AlignmentTween(

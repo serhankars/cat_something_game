@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class CatPositinioningService extends ChangeNotifier {
+class CatPositioningService extends ChangeNotifier {
   late AnimationController _animationController;
   Alignment oldAlignment = const Alignment(0, 0);
   Alignment nextAlignment = const Alignment(0, 0);
@@ -15,7 +15,6 @@ class CatPositinioningService extends ChangeNotifier {
     nextAlignment = targetAlignment;
     _animationController.reset();
     _animationController.forward();
-
     notifyListeners();
   }
 
@@ -27,6 +26,7 @@ class CatPositinioningService extends ChangeNotifier {
   void resetCatPosition() {
     oldAlignment = const Alignment(0, 0);
     nextAlignment = const Alignment(0, 0);
+    _animationController.reset();
     notifyListeners();
   }
 }
