@@ -5,6 +5,9 @@ import 'package:cat_something_game/services/game_services.dart';
 import "package:flutter/material.dart";
 import 'package:provider/provider.dart';
 
+import '../helpers/positioning_helpers.dart';
+import '../services/cat_positioning_service.dart';
+import '../widgets/cat.dart';
 import '../widgets/game_over_dialog.dart';
 
 class GamePage extends StatefulWidget {
@@ -16,21 +19,18 @@ class GamePage extends StatefulWidget {
   State<GamePage> createState() => _GamePageState();
 }
 
-class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
+class _GamePageState extends State<GamePage>
+    with SingleTickerProviderStateMixin {
   bool _isGameStarted = false;
   double _screenWidth = 0;
   double _screenHeight = 0;
   int _totalMouseCatched = 0;
-
-  Alignment _oldAlignmentCat = const Alignment(0, 0);
-  Alignment _nextAlignmentCat = const Alignment(0, 0);
 
   late Alignment _oldAlignmentMouse;
   late Alignment _nextAlignmentMouse;
 
   List<Alignment> _previousAlignmentsOfKillers = [];
   List<Alignment> _nextAlignmentsOfKillers = [];
-  late AnimationController _catAnimationController;
   late AnimationController _othersAnimationContoller;
 
   late Timer _othersTimer;
@@ -39,16 +39,13 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
   Random random = Random();
 
   void _onTapDown(TapDownDetails details) {
-    double horizontalAlignment =
+    double targetAlignmentX =
         (details.globalPosition.dx - (_screenWidth / 2)) / (_screenWidth / 2);
-    double verticalAlignment =
+    double targetAlignmentY =
         (details.globalPosition.dy - (_screenHeight / 2)) / (_screenHeight / 2);
-    _oldAlignmentCat =
-        AlignmentTween(begin: _oldAlignmentCat, end: _nextAlignmentCat)
-            .evaluate(_catAnimationController);
-    _nextAlignmentCat = Alignment(horizontalAlignment, verticalAlignment);
-    _catAnimationController.reset();
-    _catAnimationController.forward();
+
+    Provider.of<CatPositinioningService>(context, listen: false)
+        .setTargetAlignment(Alignment(targetAlignmentX, targetAlignmentY));
 
     setState(() {
       if (!_isGameStarted) {
@@ -60,8 +57,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
   void _onMouseCatched() {
     setState(() {
       _totalMouseCatched++;
-      _oldAlignmentMouse = Alignment(_generateRandomCoordinateAxisValue(),
-          _generateRandomCoordinateAxisValue());
+      _oldAlignmentMouse = PositioningHelpers.generateRandomAlignment();
       _nextAlignmentMouse = _oldAlignmentMouse;
     });
   }
@@ -72,10 +68,11 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
       _othersAnimationContoller.stop();
       _othersTimer.cancel();
       _collisionControlTimer.cancel();
-      _oldAlignmentCat = const Alignment(0, 0);
-      _nextAlignmentCat = const Alignment(0, 0);
       _isGameStarted = false;
     });
+
+    Provider.of<CatPositinioningService>(context, listen: false)
+        .resetCatPosition();
 
     showDialog(
       context: context,
@@ -90,8 +87,8 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
     if (!_isGameStarted) return;
 
     Alignment currentCatAlignment =
-        AlignmentTween(begin: _oldAlignmentCat, end: _nextAlignmentCat)
-            .evaluate(_catAnimationController);
+        Provider.of<CatPositinioningService>(context, listen: false)
+            .getCurrentAlignment();
 
     Alignment currentMouseAlignment =
         AlignmentTween(begin: _oldAlignmentMouse, end: _nextAlignmentMouse)
@@ -115,13 +112,8 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
     }
   }
 
-  double _generateRandomCoordinateAxisValue() {
-    return (random.nextBool() ? -1 : 1) * random.nextDouble();
-  }
-
   @override
   void dispose() {
-    _catAnimationController.dispose();
     _othersAnimationContoller.dispose();
     super.dispose();
   }
@@ -130,9 +122,6 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
   void initState() {
     _numberOfKillers =
         Provider.of<GameServices>(context, listen: false).numberOfKillers;
-    int durationBetweenPointsForCat =
-        Provider.of<GameServices>(context, listen: false)
-            .durationBetweenPointsForCat;
 
     int durationBetweenPointsForKillers =
         Provider.of<GameServices>(context, listen: false)
@@ -140,19 +129,14 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
 
     _previousAlignmentsOfKillers = [
       for (int i = 0; i < _numberOfKillers; i++)
-        Alignment(_generateRandomCoordinateAxisValue(),
-            _generateRandomCoordinateAxisValue())
+        PositioningHelpers.generateRandomAlignment()
     ];
 
     _nextAlignmentsOfKillers = [..._previousAlignmentsOfKillers];
 
-    _oldAlignmentMouse = Alignment(_generateRandomCoordinateAxisValue(),
-        _generateRandomCoordinateAxisValue());
+    _oldAlignmentMouse = PositioningHelpers.generateRandomAlignment();
 
     _nextAlignmentMouse = _oldAlignmentMouse;
-
-    _catAnimationController = AnimationController(
-        vsync: this, duration: Duration(seconds: durationBetweenPointsForCat));
 
     _othersAnimationContoller = AnimationController(
         vsync: this,
@@ -167,13 +151,11 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
         _previousAlignmentsOfKillers = _nextAlignmentsOfKillers;
         _nextAlignmentsOfKillers = [
           for (int i = 0; i < _numberOfKillers; i++)
-            Alignment(_generateRandomCoordinateAxisValue(),
-                _generateRandomCoordinateAxisValue())
+            PositioningHelpers.generateRandomAlignment()
         ];
 
         _oldAlignmentMouse = _nextAlignmentMouse;
-        _nextAlignmentMouse = Alignment(_generateRandomCoordinateAxisValue(),
-            _generateRandomCoordinateAxisValue());
+        _nextAlignmentMouse = PositioningHelpers.generateRandomAlignment();
       });
       _othersAnimationContoller.reset();
       _othersAnimationContoller.forward();
@@ -215,16 +197,7 @@ class _GamePageState extends State<GamePage> with TickerProviderStateMixin {
                   height: 50,
                 ),
               ),
-              AlignTransition(
-                alignment: AlignmentTween(
-                        begin: _oldAlignmentCat, end: _nextAlignmentCat)
-                    .animate(_catAnimationController),
-                child: Image.asset(
-                  "assets/images/cat.png",
-                  width: 50,
-                  height: 50,
-                ),
-              ),
+              const Cat(),
               for (int i = 0; i < _numberOfKillers; i++)
                 AlignTransition(
                   alignment: AlignmentTween(

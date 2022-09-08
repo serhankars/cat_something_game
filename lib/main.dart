@@ -1,4 +1,5 @@
 import 'package:cat_something_game/pages/menu_page.dart';
+import 'package:cat_something_game/services/cat_positioning_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -19,6 +20,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<GameServices>(
             create: (context) => GameServices()),
+        ChangeNotifierProvider<CatPositinioningService>(
+            create: (context) => CatPositinioningService()),
       ],
       child: MaterialApp(
         title: 'Cat something',
