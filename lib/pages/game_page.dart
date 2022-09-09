@@ -1,16 +1,14 @@
-import 'dart:async';
 import 'dart:math';
 
+import 'package:cat_something_game/services/collision_service.dart';
 import 'package:cat_something_game/services/dogs_positioning_service.dart';
 import 'package:cat_something_game/services/game_service.dart';
-import 'package:cat_something_game/services/mouse_positioning_service.dart';
 import "package:flutter/material.dart";
 import 'package:provider/provider.dart';
 
 import '../services/cat_positioning_service.dart';
 import '../widgets/cat.dart';
 import '../widgets/dog.dart';
-import '../widgets/game_over_dialog.dart';
 import '../widgets/mouse.dart';
 
 class GamePage extends StatefulWidget {
@@ -26,12 +24,8 @@ class _GamePageState extends State<GamePage>
     with SingleTickerProviderStateMixin {
   double _screenWidth = 0;
   double _screenHeight = 0;
-  int _totalMouseCatched = 0;
 
   late AnimationController _othersAnimationContoller;
-
-  late Timer _othersTimer;
-  late Timer _collisionControlTimer;
   late int _numberOfDogs;
   Random random = Random();
 
@@ -47,71 +41,6 @@ class _GamePageState extends State<GamePage>
     Provider.of<GameService>(context, listen: false).isGameStarted = true;
   }
 
-  void _onMouseCatched() {
-    setState(() {
-      _totalMouseCatched++;
-      Provider.of<MousePositioningService>(context, listen: false)
-          .resetPosition();
-    });
-  }
-
-  void _endGame() {
-    setState(() {
-      _othersAnimationContoller.reset();
-      _othersAnimationContoller.stop();
-      _othersTimer.cancel();
-      _collisionControlTimer.cancel();
-    });
-
-    Provider.of<GameService>(context, listen: false).isGameStarted = false;
-    Provider.of<MousePositioningService>(context, listen: false).stopMovement();
-    Provider.of<CatPositioningService>(context, listen: false)
-        .resetCatPosition();
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return const GameOverDialog();
-      },
-    );
-  }
-
-  void _controlCollisions(Timer timer) {
-    if (!Provider.of<GameService>(context, listen: false).isGameStarted) return;
-
-    Alignment currentCatAlignment =
-        Provider.of<CatPositioningService>(context, listen: false)
-            .getCurrentAlignment();
-
-    Alignment currentMouseAlignment =
-        Provider.of<MousePositioningService>(context, listen: false)
-            .getCurrentAlignment();
-
-    List<Alignment> prevAlignmentOfDogs =
-        Provider.of<DogsPositioningService>(context, listen: false)
-            .previousAlignmentsList;
-    List<Alignment> nextAlignmentOfDogs =
-        Provider.of<DogsPositioningService>(context, listen: false)
-            .nextAlignmentsList;
-
-    for (int i = 0; i < _numberOfDogs; i++) {
-      Alignment currentDogAlignment = AlignmentTween(
-              begin: prevAlignmentOfDogs[i], end: nextAlignmentOfDogs[i])
-          .evaluate(_othersAnimationContoller);
-
-      if ((currentCatAlignment.x - currentDogAlignment.x).abs() < 0.04 &&
-          (currentCatAlignment.y - currentDogAlignment.y).abs() < 0.04) {
-        _endGame();
-      }
-
-      if ((currentCatAlignment.x - currentMouseAlignment.x).abs() < 0.04 &&
-          (currentCatAlignment.y - currentMouseAlignment.y).abs() < 0.04) {
-        _onMouseCatched();
-      }
-    }
-  }
-
   @override
   void dispose() {
     _othersAnimationContoller.dispose();
@@ -125,33 +54,18 @@ class _GamePageState extends State<GamePage>
 
     int durationBetweenPointsForDogs =
         Provider.of<GameService>(context, listen: false)
-            .durationBetweenPointsForKillers;
+            .durationBetweenPointsForDogs;
 
     _othersAnimationContoller = AnimationController(
         vsync: this, duration: Duration(seconds: durationBetweenPointsForDogs));
-    super.initState();
 
     Provider.of<DogsPositioningService>(context, listen: false)
         .initializeDogsPositions(_numberOfDogs, _othersAnimationContoller);
 
-    _othersTimer = Timer.periodic(
-        Duration(seconds: durationBetweenPointsForDogs), (timer) {
-      if (!Provider.of<GameService>(context, listen: false).isGameStarted) {
-        return;
-      }
+    Provider.of<GameService>(context, listen: false).initTimer(context);
+    Provider.of<CollisionService>(context, listen: false).initTimer(context);
 
-      Provider.of<DogsPositioningService>(context, listen: false)
-          .updateDogsTargets();
-
-      Provider.of<MousePositioningService>(context, listen: false)
-          .resetTarget();
-    });
-
-    _collisionControlTimer = Timer.periodic(
-        const Duration(
-          milliseconds: 10,
-        ),
-        _controlCollisions);
+    super.initState();
   }
 
   @override

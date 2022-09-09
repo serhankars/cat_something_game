@@ -29,4 +29,9 @@ class DogsPositioningService extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  void stopDogsAnimation() {
+    dogsAnimationController.reset();
+    dogsAnimationController.stop();
+  }
 }
