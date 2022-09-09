@@ -16,16 +16,18 @@ class CollisionService extends ChangeNotifier {
     context = contextParam;
     collisionControlTimer = Timer.periodic(
         const Duration(
-          milliseconds: 10,
+          milliseconds: 30,
         ),
         _controlCollisions);
   }
 
   void _controlCollisions(Timer timer) {
-    if (!Provider.of<GameService>(context, listen: false).isGameStarted) return;
+    DogsPositioningService dogsPositioningService =
+        Provider.of<DogsPositioningService>(context, listen: false);
+    GameService gameService = Provider.of<GameService>(context, listen: false);
 
-    int numberOfDogs =
-        Provider.of<GameService>(context, listen: false).numberOfDogs;
+    if (!gameService.isGameStarted) return;
+    int numberOfDogs = gameService.numberOfDogs;
 
     Alignment currentCatAlignment =
         Provider.of<CatPositioningService>(context, listen: false)
@@ -36,17 +38,14 @@ class CollisionService extends ChangeNotifier {
             .getCurrentAlignment();
 
     List<Alignment> prevAlignmentOfDogs =
-        Provider.of<DogsPositioningService>(context, listen: false)
-            .previousAlignmentsList;
+        dogsPositioningService.previousAlignmentsList;
     List<Alignment> nextAlignmentOfDogs =
-        Provider.of<DogsPositioningService>(context, listen: false)
-            .nextAlignmentsList;
+        dogsPositioningService.nextAlignmentsList;
 
     for (int i = 0; i < numberOfDogs; i++) {
       Alignment currentDogAlignment = AlignmentTween(
               begin: prevAlignmentOfDogs[i], end: nextAlignmentOfDogs[i])
-          .evaluate(Provider.of<DogsPositioningService>(context, listen: false)
-              .dogsAnimationController);
+          .evaluate(dogsPositioningService.dogsAnimationController);
 
       if ((currentCatAlignment.x - currentDogAlignment.x).abs() < 0.04 &&
           (currentCatAlignment.y - currentDogAlignment.y).abs() < 0.04) {

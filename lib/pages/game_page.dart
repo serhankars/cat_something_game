@@ -76,25 +76,20 @@ class _GamePageState extends State<GamePage>
     return Scaffold(
       body: GestureDetector(
         onTapDown: _onTapDown,
-        child: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              colorFilter: ColorFilter.mode(Colors.grey, BlendMode.color),
-              image: AssetImage("assets/images/background.png"),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
+              "assets/images/background.png",
               fit: BoxFit.cover,
             ),
-          ),
-          constraints: const BoxConstraints.expand(),
-          child: Stack(
-            children: [
-              const Mouse(),
-              const Cat(),
-              for (int i = 0; i < _numberOfDogs; i++)
-                Dog(
-                  dogIndex: i,
-                ),
-            ],
-          ),
+            const Mouse(),
+            const Cat(),
+            for (int i = 0; i < _numberOfDogs; i++)
+              Dog(
+                dogIndex: i,
+              ),
+          ],
         ),
       ),
     );
