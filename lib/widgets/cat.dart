@@ -2,7 +2,7 @@ import 'package:cat_something_game/services/cat_positioning_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../services/game_services.dart';
+import '../services/game_service.dart';
 
 class Cat extends StatefulWidget {
   const Cat({super.key});
@@ -17,7 +17,7 @@ class _CatState extends State<Cat> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     int durationBetweenPointsForCat =
-        Provider.of<GameServices>(context, listen: false)
+        Provider.of<GameService>(context, listen: false)
             .durationBetweenPointsForCat;
 
     _animationController = AnimationController(

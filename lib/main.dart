@@ -1,10 +1,11 @@
 import 'package:cat_something_game/pages/menu_page.dart';
 import 'package:cat_something_game/services/cat_positioning_service.dart';
+import 'package:cat_something_game/services/dogs_positioning_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'pages/game_page.dart';
-import 'services/game_services.dart';
+import 'services/game_service.dart';
 import 'services/mouse_positioning_service.dart';
 
 void main() {
@@ -19,12 +20,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<GameServices>(
-            create: (context) => GameServices()),
+        ChangeNotifierProvider<GameService>(create: (context) => GameService()),
         ChangeNotifierProvider<CatPositioningService>(
             create: (context) => CatPositioningService()),
         ChangeNotifierProvider<MousePositioningService>(
             create: (context) => MousePositioningService()),
+        ChangeNotifierProvider<DogsPositioningService>(
+            create: (context) => DogsPositioningService()),
       ],
       child: MaterialApp(
         title: 'Cat something',

@@ -3,7 +3,7 @@ import 'package:cat_something_game/services/mouse_positioning_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../services/game_services.dart';
+import '../services/game_service.dart';
 
 class Mouse extends StatefulWidget {
   const Mouse({super.key});
@@ -17,7 +17,7 @@ class _MouseState extends State<Mouse> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     int durationBetweenPointsForMouse =
-        Provider.of<GameServices>(context, listen: false)
+        Provider.of<GameService>(context, listen: false)
             .durationBetweenPointsForMouse;
 
     _animationController = AnimationController(

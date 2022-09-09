@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:cat_something_game/services/game_services.dart';
+import 'package:cat_something_game/services/dogs_positioning_service.dart';
+import 'package:cat_something_game/services/game_service.dart';
 import 'package:cat_something_game/services/mouse_positioning_service.dart';
 import "package:flutter/material.dart";
 import 'package:provider/provider.dart';
 
-import '../helpers/positioning_helpers.dart';
 import '../services/cat_positioning_service.dart';
 import '../widgets/cat.dart';
+import '../widgets/dog.dart';
 import '../widgets/game_over_dialog.dart';
 import '../widgets/mouse.dart';
 
@@ -23,18 +24,15 @@ class GamePage extends StatefulWidget {
 
 class _GamePageState extends State<GamePage>
     with SingleTickerProviderStateMixin {
-  bool _isGameStarted = false;
   double _screenWidth = 0;
   double _screenHeight = 0;
   int _totalMouseCatched = 0;
 
-  List<Alignment> _previousAlignmentsOfKillers = [];
-  List<Alignment> _nextAlignmentsOfKillers = [];
   late AnimationController _othersAnimationContoller;
 
   late Timer _othersTimer;
   late Timer _collisionControlTimer;
-  late int _numberOfKillers;
+  late int _numberOfDogs;
   Random random = Random();
 
   void _onTapDown(TapDownDetails details) {
@@ -46,11 +44,7 @@ class _GamePageState extends State<GamePage>
     Provider.of<CatPositioningService>(context, listen: false)
         .setTargetAlignment(Alignment(targetAlignmentX, targetAlignmentY));
 
-    setState(() {
-      if (!_isGameStarted) {
-        _isGameStarted = true;
-      }
-    });
+    Provider.of<GameService>(context, listen: false).isGameStarted = true;
   }
 
   void _onMouseCatched() {
@@ -67,9 +61,9 @@ class _GamePageState extends State<GamePage>
       _othersAnimationContoller.stop();
       _othersTimer.cancel();
       _collisionControlTimer.cancel();
-      _isGameStarted = false;
     });
 
+    Provider.of<GameService>(context, listen: false).isGameStarted = false;
     Provider.of<MousePositioningService>(context, listen: false).stopMovement();
     Provider.of<CatPositioningService>(context, listen: false)
         .resetCatPosition();
@@ -84,7 +78,7 @@ class _GamePageState extends State<GamePage>
   }
 
   void _controlCollisions(Timer timer) {
-    if (!_isGameStarted) return;
+    if (!Provider.of<GameService>(context, listen: false).isGameStarted) return;
 
     Alignment currentCatAlignment =
         Provider.of<CatPositioningService>(context, listen: false)
@@ -94,14 +88,20 @@ class _GamePageState extends State<GamePage>
         Provider.of<MousePositioningService>(context, listen: false)
             .getCurrentAlignment();
 
-    for (int i = 0; i < _numberOfKillers; i++) {
-      Alignment currentKillerAlignment = AlignmentTween(
-              begin: _previousAlignmentsOfKillers[i],
-              end: _nextAlignmentsOfKillers[i])
+    List<Alignment> prevAlignmentOfDogs =
+        Provider.of<DogsPositioningService>(context, listen: false)
+            .previousAlignmentsList;
+    List<Alignment> nextAlignmentOfDogs =
+        Provider.of<DogsPositioningService>(context, listen: false)
+            .nextAlignmentsList;
+
+    for (int i = 0; i < _numberOfDogs; i++) {
+      Alignment currentDogAlignment = AlignmentTween(
+              begin: prevAlignmentOfDogs[i], end: nextAlignmentOfDogs[i])
           .evaluate(_othersAnimationContoller);
 
-      if ((currentCatAlignment.x - currentKillerAlignment.x).abs() < 0.04 &&
-          (currentCatAlignment.y - currentKillerAlignment.y).abs() < 0.04) {
+      if ((currentCatAlignment.x - currentDogAlignment.x).abs() < 0.04 &&
+          (currentCatAlignment.y - currentDogAlignment.y).abs() < 0.04) {
         _endGame();
       }
 
@@ -120,40 +120,31 @@ class _GamePageState extends State<GamePage>
 
   @override
   void initState() {
-    _numberOfKillers =
-        Provider.of<GameServices>(context, listen: false).numberOfKillers;
+    _numberOfDogs =
+        Provider.of<GameService>(context, listen: false).numberOfDogs;
 
-    int durationBetweenPointsForKillers =
-        Provider.of<GameServices>(context, listen: false)
+    int durationBetweenPointsForDogs =
+        Provider.of<GameService>(context, listen: false)
             .durationBetweenPointsForKillers;
 
-    _previousAlignmentsOfKillers = [
-      for (int i = 0; i < _numberOfKillers; i++)
-        PositioningHelpers.generateRandomAlignment()
-    ];
-
-    _nextAlignmentsOfKillers = [..._previousAlignmentsOfKillers];
     _othersAnimationContoller = AnimationController(
-        vsync: this,
-        duration: Duration(seconds: durationBetweenPointsForKillers));
+        vsync: this, duration: Duration(seconds: durationBetweenPointsForDogs));
     super.initState();
 
-    _othersTimer = Timer.periodic(
-        Duration(seconds: durationBetweenPointsForKillers), (timer) {
-      if (!_isGameStarted) return;
+    Provider.of<DogsPositioningService>(context, listen: false)
+        .initializeDogsPositions(_numberOfDogs, _othersAnimationContoller);
 
-      setState(() {
-        _previousAlignmentsOfKillers = _nextAlignmentsOfKillers;
-        _nextAlignmentsOfKillers = [
-          for (int i = 0; i < _numberOfKillers; i++)
-            PositioningHelpers.generateRandomAlignment()
-        ];
-      });
+    _othersTimer = Timer.periodic(
+        Duration(seconds: durationBetweenPointsForDogs), (timer) {
+      if (!Provider.of<GameService>(context, listen: false).isGameStarted) {
+        return;
+      }
+
+      Provider.of<DogsPositioningService>(context, listen: false)
+          .updateDogsTargets();
 
       Provider.of<MousePositioningService>(context, listen: false)
           .resetTarget();
-      _othersAnimationContoller.reset();
-      _othersAnimationContoller.forward();
     });
 
     _collisionControlTimer = Timer.periodic(
@@ -184,17 +175,9 @@ class _GamePageState extends State<GamePage>
             children: [
               const Mouse(),
               const Cat(),
-              for (int i = 0; i < _numberOfKillers; i++)
-                AlignTransition(
-                  alignment: AlignmentTween(
-                          begin: _previousAlignmentsOfKillers[i],
-                          end: _nextAlignmentsOfKillers[i])
-                      .animate(_othersAnimationContoller),
-                  child: Image.asset(
-                    "assets/images/dog.png",
-                    width: 50,
-                    height: 50,
-                  ),
+              for (int i = 0; i < _numberOfDogs; i++)
+                Dog(
+                  dogIndex: i,
                 ),
             ],
           ),
