@@ -1,12 +1,16 @@
 import 'package:cat_something_game/pages/game_page.dart';
 import 'package:cat_something_game/pages/menu_page.dart';
+import 'package:cat_something_game/services/game_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class GameOverDialog extends StatelessWidget {
   const GameOverDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
+    int score =
+        Provider.of<GameService>(context, listen: false).totalMouseCatched;
     return Dialog(
       clipBehavior: Clip.antiAliasWithSaveLayer,
       insetAnimationDuration: const Duration(seconds: 5),
@@ -37,7 +41,7 @@ class GameOverDialog extends StatelessWidget {
               alignment: Alignment.center,
               fit: BoxFit.scaleDown,
               child: Text(
-                "GAME OVER!",
+                "OOPSIE!",
                 style: TextStyle(
                   fontSize: 30,
                   color: Colors.white,
@@ -45,7 +49,21 @@ class GameOverDialog extends StatelessWidget {
               ),
             ),
             const SizedBox(
-              height: 15,
+              height: 10,
+            ),
+            FittedBox(
+              alignment: Alignment.center,
+              fit: BoxFit.scaleDown,
+              child: Text(
+                "SCORE: $score",
+                style: const TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 10,
             ),
             SizedBox(
               width: 200,

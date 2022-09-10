@@ -16,6 +16,7 @@ class GameService extends ChangeNotifier {
   int totalMouseCatched = 0;
 
   void initTimer(BuildContext context) {
+    totalMouseCatched = 0;
     autonumousItemsTimer = Timer.periodic(
         Duration(seconds: durationBetweenPointsForDogs), (timer) {
       if (!isGameStarted) {

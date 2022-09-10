@@ -6,6 +6,7 @@ import 'package:cat_something_game/services/game_service.dart';
 import "package:flutter/material.dart";
 import 'package:provider/provider.dart';
 
+import '../cat_something_icons.dart';
 import '../services/cat_positioning_service.dart';
 import '../widgets/cat.dart';
 import '../widgets/dog.dart';
@@ -74,23 +75,60 @@ class _GamePageState extends State<GamePage>
     _screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      body: GestureDetector(
-        onTapDown: _onTapDown,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.asset(
-              "assets/images/background.png",
-              fit: BoxFit.cover,
-            ),
-            const Mouse(),
-            const Cat(),
-            for (int i = 0; i < _numberOfDogs; i++)
-              Dog(
-                dogIndex: i,
+      body: Column(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTapDown: _onTapDown,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset(
+                    "assets/images/background.png",
+                    fit: BoxFit.cover,
+                  ),
+                  const Mouse(),
+                  const Cat(),
+                  for (int i = 0; i < _numberOfDogs; i++)
+                    Dog(
+                      dogIndex: i,
+                    ),
+                  Consumer<GameService>(builder: (context, gameService, child) {
+                    return Align(
+                      alignment: Alignment.topRight,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        margin: const EdgeInsets.only(top: 20, right: 10),
+                        color: Colors.green.shade900.withOpacity(0.8),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              CatSomethingIcons.mouse,
+                              color: Colors.white,
+                              size: 30,
+                            ),
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            Text(
+                              gameService.totalMouseCatched.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 40,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ],
               ),
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }

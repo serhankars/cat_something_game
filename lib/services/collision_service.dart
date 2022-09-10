@@ -11,6 +11,7 @@ import 'mouse_positioning_service.dart';
 class CollisionService extends ChangeNotifier {
   late BuildContext context;
   late Timer collisionControlTimer;
+  bool _mouseCatched = false;
 
   void initTimer(BuildContext contextParam) {
     context = contextParam;
@@ -37,6 +38,13 @@ class CollisionService extends ChangeNotifier {
         Provider.of<MousePositioningService>(context, listen: false)
             .getCurrentAlignment();
 
+    if (!_mouseCatched &&
+        (currentCatAlignment.x - currentMouseAlignment.x).abs() < 0.06 &&
+        (currentCatAlignment.y - currentMouseAlignment.y).abs() < 0.06) {
+      _mouseCatched = true;
+      _onMouseCatched();
+    }
+
     List<Alignment> prevAlignmentOfDogs =
         dogsPositioningService.previousAlignmentsList;
     List<Alignment> nextAlignmentOfDogs =
@@ -47,14 +55,9 @@ class CollisionService extends ChangeNotifier {
               begin: prevAlignmentOfDogs[i], end: nextAlignmentOfDogs[i])
           .evaluate(dogsPositioningService.dogsAnimationController);
 
-      if ((currentCatAlignment.x - currentDogAlignment.x).abs() < 0.04 &&
-          (currentCatAlignment.y - currentDogAlignment.y).abs() < 0.04) {
+      if ((currentCatAlignment.x - currentDogAlignment.x).abs() < 0.06 &&
+          (currentCatAlignment.y - currentDogAlignment.y).abs() < 0.06) {
         _endGame();
-      }
-
-      if ((currentCatAlignment.x - currentMouseAlignment.x).abs() < 0.04 &&
-          (currentCatAlignment.y - currentMouseAlignment.y).abs() < 0.04) {
-        _onMouseCatched();
       }
     }
   }
@@ -63,6 +66,7 @@ class CollisionService extends ChangeNotifier {
     Provider.of<GameService>(context, listen: false).onMouseCatched();
     Provider.of<MousePositioningService>(context, listen: false)
         .resetPosition();
+    _mouseCatched = false;
   }
 
   void _endGame() {

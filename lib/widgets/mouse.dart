@@ -53,8 +53,8 @@ class _MouseState extends State<Mouse> with SingleTickerProviderStateMixin {
             .animate(_animationController),
         child: Image.asset(
           "assets/images/mouse.png",
-          width: 50,
-          height: 50,
+          width: 30,
+          height: 30,
         ),
       );
     });

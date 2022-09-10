@@ -80,6 +80,10 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
+    - family: CatSomething
+      fonts:
+          - asset: assets/fonts/CatSomething.ttf
+
     - family: BitmapFont
       fonts:
         - asset: assets/fonts/Silkscreen-Bold.ttf

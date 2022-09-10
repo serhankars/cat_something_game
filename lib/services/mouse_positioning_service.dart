@@ -7,8 +7,11 @@ class MousePositioningService extends ChangeNotifier {
   late Alignment nextAlignment;
 
   Alignment getCurrentAlignment() {
-    return AlignmentTween(begin: oldAlignment, end: nextAlignment)
-        .evaluate(_animationController);
+    Alignment currentAlignment =
+        AlignmentTween(begin: oldAlignment, end: nextAlignment)
+            .evaluate(_animationController);
+
+    return currentAlignment;
   }
 
   void setAnimationController(AnimationController animationController) {
@@ -24,6 +27,7 @@ class MousePositioningService extends ChangeNotifier {
   void resetPosition() {
     oldAlignment = PositioningHelpers.generateRandomAlignment();
     nextAlignment = oldAlignment;
+    _animationController.reset();
     notifyListeners();
   }
 

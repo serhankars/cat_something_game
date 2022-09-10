@@ -32,6 +32,7 @@ class MyApp extends StatelessWidget {
             create: (context) => CollisionService()),
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Cat something',
         theme: ThemeData(
           fontFamily: 'BitmapFont',
