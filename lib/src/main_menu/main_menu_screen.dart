@@ -85,7 +85,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
-              width: 130,
+              width: 240,
               height: 50,
               child: OutlinedButton(
                 onPressed: () {
@@ -101,24 +101,24 @@ class _MainMenuScreenState extends State<MainMenuScreen>
             if (gamesServicesController != null) ...[
               _hideUntilReady(
                 ready: gamesServicesController.signedIn,
-                child: OutlinedButton(
-                  onPressed: () => gamesServicesController.showAchievements(),
-                  child: const Text('Achievements'),
-                ),
-              ),
-              MainMenuScreen._gap,
-              _hideUntilReady(
-                ready: gamesServicesController.signedIn,
-                child: OutlinedButton(
-                  onPressed: () => gamesServicesController.showLeaderboard(),
-                  child: const Text('Leaderboard'),
+                child: SizedBox(
+                  width: 240,
+                  height: 50,
+                  child: OutlinedButton(
+                    onPressed: () => gamesServicesController.showLeaderboard(),
+                    child: const Text('Leaderboard'),
+                  ),
                 ),
               ),
               MainMenuScreen._gap,
             ],
-            OutlinedButton(
-              onPressed: () => GoRouter.of(context).go('/settings'),
-              child: const Text('Settings'),
+            SizedBox(
+              width: 240,
+              height: 50,
+              child: OutlinedButton(
+                onPressed: () => GoRouter.of(context).go('/settings'),
+                child: const Text('Settings'),
+              ),
             ),
             MainMenuScreen._gap,
             Padding(

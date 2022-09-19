@@ -1,4 +1,4 @@
-package com.example.game_template
+package com.karscodes.cat_smth
 
 import io.flutter.embedding.android.FlutterActivity
 

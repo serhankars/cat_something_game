@@ -7,6 +7,7 @@
 // import 'package:firebase_core/firebase_core.dart';
 // import 'firebase_options.dart';
 
+import 'dart:io' show Platform;
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,6 @@ import 'src/app_lifecycle/app_lifecycle.dart';
 import 'src/audio/audio_controller.dart';
 import 'src/crashlytics/crashlytics.dart';
 import 'src/games_services/games_services.dart';
-import 'src/games_services/score.dart';
 import 'src/in_app_purchase/in_app_purchase.dart';
 import 'src/main_menu/main_menu_screen.dart';
 import 'src/play_session/play_session_screen.dart';
@@ -97,11 +97,11 @@ void guardedMain() {
   // }
 
   GamesServicesController? gamesServicesController;
-  // if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
-  //   gamesServicesController = GamesServicesController()
-  //     // Attempt to log the player in.
-  //     ..initialize();
-  // }
+  if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
+    gamesServicesController = GamesServicesController()
+      // Attempt to log the player in.
+      ..initialize();
+  }
 
   InAppPurchaseController? inAppPurchaseController;
   // if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
@@ -248,6 +248,7 @@ class MyApp extends StatelessWidget {
           final palette = context.watch<Palette>();
 
           return MaterialApp.router(
+            debugShowCheckedModeBanner: false,
             title: 'Cat Something',
             theme: ThemeData.from(
               colorScheme: ColorScheme.fromSeed(
@@ -267,10 +268,11 @@ class MyApp extends StatelessWidget {
                   if (states.contains(MaterialState.hovered) ||
                       states.contains(MaterialState.pressed)) {
                     return BorderSide(
-                        color: palette.pressedOutlinedButtonColor);
+                        color: palette.pressedOutlinedButtonColor, width: 2);
                   }
 
-                  return BorderSide(color: palette.outlinedButtonColor);
+                  return BorderSide(
+                      color: palette.outlinedButtonColor, width: 3);
                 }),
                 foregroundColor: MaterialStateProperty.resolveWith<Color>(
                   (states) {
