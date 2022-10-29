@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../games_services/cat_positioning_service.dart';
-import '../../games_services/game_service.dart';
+import '../../game_internals/cat_positioning_service.dart';
+import '../../game_internals/game_service.dart';
 
 class Cat extends StatefulWidget {
   const Cat({super.key});

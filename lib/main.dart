@@ -8,15 +8,14 @@
 // import 'firebase_options.dart';
 
 import 'dart:io' show Platform;
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:game_template/src/games_services/cat_positioning_service.dart';
-import 'package:game_template/src/games_services/collision_service.dart';
-import 'package:game_template/src/games_services/dogs_positioning_service.dart';
-import 'package:game_template/src/games_services/game_service.dart';
-import 'package:game_template/src/games_services/mouse_positioning_service.dart';
+import 'package:game_template/src/game_internals/cat_positioning_service.dart';
+import 'package:game_template/src/game_internals/collision_service.dart';
+import 'package:game_template/src/game_internals/dogs_positioning_service.dart';
+import 'package:game_template/src/game_internals/game_service.dart';
+import 'package:game_template/src/game_internals/mouse_positioning_service.dart';
 import 'package:game_template/src/result/result_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
@@ -25,7 +24,6 @@ import 'package:provider/provider.dart';
 import 'src/ads/ads_controller.dart';
 import 'src/app_lifecycle/app_lifecycle.dart';
 import 'src/audio/audio_controller.dart';
-import 'src/crashlytics/crashlytics.dart';
 import 'src/games_services/games_services.dart';
 import 'src/in_app_purchase/in_app_purchase.dart';
 import 'src/main_menu/main_menu_screen.dart';
@@ -41,32 +39,8 @@ import 'src/style/my_transition.dart';
 import 'src/style/palette.dart';
 import 'src/style/snack_bar.dart';
 
-Future<void> main() async {
-  // To enable Firebase Crashlytics, uncomment the following lines and
-  // the import statements at the top of this file.
-  // See the 'Crashlytics' section of the main README.md file for details.
-
-  FirebaseCrashlytics? crashlytics;
-  // if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
-  //   try {
-  //     WidgetsFlutterBinding.ensureInitialized();
-  //     await Firebase.initializeApp(
-  //       options: DefaultFirebaseOptions.currentPlatform,
-  //     );
-  //     crashlytics = FirebaseCrashlytics.instance;
-  //   } catch (e) {
-  //     debugPrint("Firebase couldn't be initialized: $e");
-  //   }
-  // }
-
-  await guardWithCrashlytics(
-    guardedMain,
-    crashlytics: crashlytics,
-  );
-}
-
 /// Without logging and crash reporting, this would be `void main()`.
-void guardedMain() {
+void main() {
   if (kReleaseMode) {
     // Don't log anything below warnings in production.
     Logger.root.level = Level.WARNING;
@@ -137,7 +111,7 @@ class MyApp extends StatelessWidget {
             GoRoute(
                 path: 'play',
                 pageBuilder: (context, state) {
-                  return buildMyTransition(
+                  return buildMyTransition<void>(
                     child: PlaySessionScreen(
                       key: const Key('play session'),
                     ),
@@ -154,7 +128,7 @@ class MyApp extends StatelessWidget {
                         if (map.containsKey("score"))
                           score = map['score'] as int;
                       }
-                      return buildMyTransition(
+                      return buildMyTransition<void>(
                         child: ResultScreen(
                           score: score,
                           key: const Key('result'),

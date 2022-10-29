@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../games_services/game_service.dart';
-import '../../games_services/mouse_positioning_service.dart';
+import '../../game_internals/game_service.dart';
+import '../../game_internals/mouse_positioning_service.dart';
 
 class Mouse extends StatefulWidget {
   const Mouse({super.key});

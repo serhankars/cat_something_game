@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../games_services/dogs_positioning_service.dart';
+import '../../game_internals/dogs_positioning_service.dart';
 
 class Dog extends StatelessWidget {
   final int dogIndex;

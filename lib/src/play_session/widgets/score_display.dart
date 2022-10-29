@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../games_services/game_service.dart';
+import '../../game_internals/game_service.dart';
 import '../../style/cat_something_icons.dart';
 import '../../style/palette.dart';
 
